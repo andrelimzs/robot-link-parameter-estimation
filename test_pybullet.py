@@ -1,7 +1,10 @@
 import os, inspect
 
 import numpy as np
-import time, math
+import numpy.linalg as LA
+import time
+import math
+from math import sin, cos
 import subprocess
 import pybullet as p2
 import pybullet_data
@@ -9,15 +12,26 @@ from pybullet_utils import bullet_client as bc
 
 import matplotlib.pyplot as plt
 
-def step(p, action):
+
+GUI_MODE = False
+
+def step(p, action, CONTROL_TYPE='TORQUE'):
+    # Limit torque to 5
+    action = np.clip(action, -1, 1)
+
     # Send torque to joints (setJointMotorControl2)
     # Parameters:
     #   objUid
     #   jointIndex
     #   controlMode
     #   force
-    p.setJointMotorControl2(RRrobot, 0, p.TORQUE_CONTROL, force=action[0])
-    p.setJointMotorControl2(RRrobot, 1, p.TORQUE_CONTROL, force=action[1])
+    if CONTROL_TYPE == 'TORQUE':
+        p.setJointMotorControl2(RRrobot, 0, p.TORQUE_CONTROL, force=action[0])
+        p.setJointMotorControl2(RRrobot, 1, p.TORQUE_CONTROL, force=action[1])
+        
+    elif CONTROL_TYPE == 'VELOCITY':
+        p.setJointMotorControl2(RRrobot, 0, p.VELOCITY_CONTROL, targetVelocity=action[0])
+        p.setJointMotorControl2(RRrobot, 1, p.VELOCITY_CONTROL, targetVelocity=action[1])
 
     # Simulate one time step
     p.stepSimulation()
@@ -31,10 +45,12 @@ def step(p, action):
     #   jointvelocity
     #   jointReactionForces
     #   appliedJointMotorTroque (Only in VELOCITY_CONTROL or POSITION_CONTROL)
-    state = p.getJointState(RRrobot, 1)[0:2] + p.getJointState(RRrobot, 0)[0:2]
+    state = p.getJointState(RRrobot, 0)[0:2] + p.getJointState(RRrobot, 1)[0:2]
+
+    ee_state = p.getLinkState(RRrobot, 2)[0][0:2]
 
     # Return state = { q1, q1_d, q2, q2_d }
-    return np.array(state)
+    return np.array(state), np.array(ee_state)
 
 def render(p, physics_client_id):
     _render_width = 320
@@ -111,7 +127,10 @@ def compute_force_jacobian(state):
 
 
 # Connect to simulation engine
-p = bc.BulletClient(connection_mode=p2.GUI)
+if GUI_MODE:
+    p = bc.BulletClient(connection_mode=p2.GUI)
+else:
+    p = bc.BulletClient(connection_mode=p2.DIRECT)
 physics_client_id = p._client
 
 # Reset simulation and load model
@@ -139,6 +158,7 @@ p.setRealTimeSimulation(0)
 p.resetJointState(RRrobot, 0, targetValue=0, targetVelocity=0)
 p.resetJointState(RRrobot, 1, targetValue=0, targetVelocity=0)
 
+state, ee_state = step(p, [0,0])
 
 # Random control
 for i in range(1000):
