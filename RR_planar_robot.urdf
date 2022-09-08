@@ -27,7 +27,7 @@
     <inertial>
       <origin xyz="0.5 0 0"/>
       <mass value="0.1"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <inertia ixx="0.33" ixy="0.0" ixz="0.0" iyy="0.33" iyz="0.0" izz="0.33"/>
     </inertial>
 
     <visual>
@@ -60,7 +60,7 @@
     <inertial>
       <origin xyz="0.5 0 0"/>
       <mass value="0.1"/>
-      <inertia ixx="1.0" ixy="0.0" ixz="0.0" iyy="1.0" iyz="0.0" izz="1.0"/>
+      <inertia ixx="0.33" ixy="0.0" ixz="0.0" iyy="0.33" iyz="0.0" izz="0.33"/>
     </inertial>
 
     <visual>
@@ -82,7 +82,7 @@
 
   </link>
 
-  <joint name="link1_to_link2" type="fixed">
+  <joint name="link1_to_link2" type="continuous">
     <axis xyz="0 0 1"/>
     <origin xyz="1.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
     <parent link="link1"/>
