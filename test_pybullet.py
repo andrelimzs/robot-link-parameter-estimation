@@ -148,7 +148,6 @@ p.setJointMotorControl2(RRrobot, 1, p.VELOCITY_CONTROL, force=0)
 
 # Set unknown link physical parameters
 p.changeDynamics(RRrobot, 2, mass=0.01)
-p.resetJointState(RRrobot, 2, targetValue=np.deg2rad(45))
 
 # Set gravity
 p.setGravity(0, 0, 0)
@@ -193,7 +192,7 @@ for i in range(sim_length):
 
     # Control Law (PID)
     pos_Kp = 2
-    vel_Kp = 15
+    vel_Kp = 20
 
     # Position Loop
     pos_des = pos_cmd
@@ -214,12 +213,6 @@ for i in range(sim_length):
         # [TEST] Use velocity control
         action_vel = LA.pinv(J) @ vel_des.reshape((2,1))
         state, ee_state = step(p, action_vel, 'VELOCITY')
-
-    if 0:
-        # [TEST] Use pybullet calculateInverseDynamics
-        torque = p.calculateInverseDynamics(RRrobot, pos_des, vel_des, acc_des)
-        print(torque)
-        state, ee_state = step(p, torque)
 
     # Log
     log['pos'][:,i] = pos
@@ -261,4 +254,3 @@ plt.plot(log['pos'][0], log['pos'][1])
 plt.plot(log['pos_des'][0], log['pos_des'][1])
 
 plt.show()
-
