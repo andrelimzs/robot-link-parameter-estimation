@@ -92,6 +92,24 @@ def joint_to_task_state(state):
 
     return pos, vel
 
+def compute_force_jacobian(state):
+    # Physical parameters
+    l1 = 1
+    l2 = 1
+
+    # Unpack state
+    q1, q1_d, q2, q2_d = state
+
+    # Compute Jacobian
+    J = np.zeros((2,2))
+    J[0,0] = -l1 * sin(q1) - l2 * sin(q1 + q2)
+    J[0,1] = -l2 * sin(q1 + q2)
+    J[1,0] =  l1 * cos(q1) + l2 * cos(q1 + q2)
+    J[1,1] =  l2 * cos(q1 + q2)
+
+    return J
+
+
 # Connect to simulation engine
 p = bc.BulletClient(connection_mode=p2.GUI)
 physics_client_id = p._client
