@@ -160,6 +160,15 @@ p.resetJointState(RRrobot, 1, targetValue=0, targetVelocity=0)
 
 state, ee_state = step(p, [0,0])
 
+sim_length = int(30/timeStep)
+log = {
+    't': np.linspace(0,10,sim_length),
+    'pos': np.zeros((2,sim_length)),
+    'vel': np.zeros((2,sim_length)),
+    'pos_des': np.zeros((2,sim_length)),
+    'vel_des': np.zeros((2,sim_length)),
+}
+
 # Random control
 for i in range(sim_length):
     # Time
@@ -219,3 +228,28 @@ for i in range(sim_length):
         print("vel_des\t", vel_des)
         print("vel\t", vel)
         print("acc_des", acc_des)
+
+# Plot Results
+_, ax = plt.subplots(2,2)
+# Position
+ax[0,0].plot(log['t'], log['pos'][0])
+ax[0,0].plot(log['t'], log['pos_des'][0])
+ax[0,0].set_title('Position')
+
+ax[1,0].plot(log['t'], log['pos'][1])
+ax[1,0].plot(log['t'], log['pos_des'][1])
+
+# Velocity
+ax[0,1].plot(log['t'], log['vel'][0])
+ax[0,1].plot(log['t'], log['vel_des'][0])
+ax[0,1].set_title('Velocity')
+
+ax[1,1].plot(log['t'], log['vel'][1])
+ax[1,1].plot(log['t'], log['vel_des'][1])
+
+_ = plt.figure()
+plt.plot(log['pos'][0], log['pos'][1])
+plt.plot(log['pos_des'][0], log['pos_des'][1])
+
+plt.show()
+
