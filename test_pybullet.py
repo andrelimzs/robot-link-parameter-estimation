@@ -161,9 +161,61 @@ p.resetJointState(RRrobot, 1, targetValue=0, targetVelocity=0)
 state, ee_state = step(p, [0,0])
 
 # Random control
-for i in range(1000):
-    # action = [10*(np.random.random() - 0.5), None]
-    action = [0, 0.1*math.sin(10*i/100)]
-    step(p, action)
-    rgb_array = render(p, physics_client_id)
+for i in range(sim_length):
+    # Time
+    t = i * timeStep / 2
 
+    # Get force Jacobian
+    J = compute_force_jacobian(state)
+
+    # Convert joint variables to cartesian
+    pos = ee_state
+    pos, vel = joint_to_task_state(state)
+    # print("pos\t", pos)
+    # print("pos_est\t", pos_est)
+
+    # # Generate trajectory
+    # pos_des = np.array([sin(2*t), 1 + 0.5*sin(t)])
+    
+    # TEST [ 0.5, sin(t) ]
+    pos_des = np.array([sin(2*t), 1+0.5*sin(t)])
+
+    # Control Law (PID)
+    pos_Kp = 1
+    vel_Kp = 5
+
+    # Position Loop
+    pos_err = pos_des - pos
+    vel_des = pos_Kp * pos_err
+
+    # Velocity Loop
+    vel_err = vel_des - vel
+    acc_des = vel_Kp * vel_err
+
+    if 1:
+        # Convert acceleration to joint ang acc
+        q_dd_des = LA.pinv(J) @ acc_des.reshape((2,1))
+        action = q_dd_des
+        state, ee_state = step(p, action)
+
+    else:
+        # [TEST] Use velocity control
+        action_vel = LA.pinv(J) @ vel_des.reshape((2,1))
+        state, ee_state = step(p, action_vel, 'VELOCITY')
+
+    # Log
+    log['pos'][:,i] = pos
+    log['vel'][:,i] = vel
+    log['pos_des'][:,i] = pos_des
+    log['vel_des'][:,i] = vel_des
+
+    if GUI_MODE:
+        time.sleep(0.001)
+        # rgb_array = render(p, physics_client_id)
+
+    if i % 10 == 0:
+        print("\npos_des\t", pos_des)
+        print("pos\t", pos)
+        print("vel_des\t", vel_des)
+        print("vel\t", vel)
+        print("acc_des", acc_des)
