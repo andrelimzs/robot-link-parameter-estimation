@@ -155,8 +155,8 @@ p.setTimeStep(timeStep)
 p.setRealTimeSimulation(0)
 
 # Reset joint states
-p.resetJointState(RRrobot, 0, targetValue=0, targetVelocity=0)
-p.resetJointState(RRrobot, 1, targetValue=0, targetVelocity=0)
+p.resetJointState(RRrobot, 0, targetValue=np.deg2rad(135), targetVelocity=0)
+p.resetJointState(RRrobot, 1, targetValue=np.deg2rad(-90), targetVelocity=0)
 
 state, ee_state = step(p, [0,0])
 
