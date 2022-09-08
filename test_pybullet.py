@@ -138,13 +138,17 @@ p.resetSimulation()
 RRrobot = p.loadURDF("RR_planar_robot.urdf", [0, 0, 0])
 
 # Remove all damping
-p.changeDynamics(RRrobot, -1, linearDamping=0, angularDamping=0)
-p.changeDynamics(RRrobot, 0, linearDamping=0, angularDamping=0)
-p.changeDynamics(RRrobot, 1, linearDamping=0, angularDamping=0)
+p.changeDynamics(RRrobot, -1, linearDamping=0, angularDamping=0, lateralFriction=0)
+p.changeDynamics(RRrobot,  0, linearDamping=0, angularDamping=0, lateralFriction=0)
+p.changeDynamics(RRrobot,  1, linearDamping=0, angularDamping=0, lateralFriction=0)
 
 # Disable joint motors to use torque control
 p.setJointMotorControl2(RRrobot, 0, p.VELOCITY_CONTROL, force=0)
 p.setJointMotorControl2(RRrobot, 1, p.VELOCITY_CONTROL, force=0)
+
+# Set unknown link physical parameters
+p.changeDynamics(RRrobot, 2, mass=0.01)
+p.resetJointState(RRrobot, 2, targetValue=np.deg2rad(45))
 
 # Set gravity
 p.setGravity(0, 0, 0)
@@ -155,8 +159,8 @@ p.setTimeStep(timeStep)
 p.setRealTimeSimulation(0)
 
 # Reset joint states
-p.resetJointState(RRrobot, 0, targetValue=np.deg2rad(135), targetVelocity=0)
-p.resetJointState(RRrobot, 1, targetValue=np.deg2rad(-90), targetVelocity=0)
+p.resetJointState(RRrobot, 0, targetValue=np.deg2rad(90 + 60), targetVelocity=0)
+p.resetJointState(RRrobot, 1, targetValue=np.deg2rad(-2 * 60), targetVelocity=0)
 
 state, ee_state = step(p, [0,0])
 
@@ -184,16 +188,15 @@ for i in range(sim_length):
     # print("pos_est\t", pos_est)
 
     # # Generate trajectory
-    # pos_des = np.array([sin(2*t), 1 + 0.5*sin(t)])
-    
-    # TEST [ 0.5, sin(t) ]
-    pos_des = np.array([sin(2*t), 1+0.5*sin(t)])
+    pos_cmd = np.array([0.5*sin(2*t), 1+0.5*sin(t)])
+    vel_cmd = np.array([0*2*0.5*cos(2*t), 0.5*cos(t)])
 
     # Control Law (PID)
-    pos_Kp = 1
-    vel_Kp = 5
+    pos_Kp = 2
+    vel_Kp = 15
 
     # Position Loop
+    pos_des = pos_cmd
     pos_err = pos_des - pos
     vel_des = pos_Kp * pos_err
 
@@ -207,10 +210,16 @@ for i in range(sim_length):
         action = q_dd_des
         state, ee_state = step(p, action)
 
-    else:
+    if 0:
         # [TEST] Use velocity control
         action_vel = LA.pinv(J) @ vel_des.reshape((2,1))
         state, ee_state = step(p, action_vel, 'VELOCITY')
+
+    if 0:
+        # [TEST] Use pybullet calculateInverseDynamics
+        torque = p.calculateInverseDynamics(RRrobot, pos_des, vel_des, acc_des)
+        print(torque)
+        state, ee_state = step(p, torque)
 
     # Log
     log['pos'][:,i] = pos
