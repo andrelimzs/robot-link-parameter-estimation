@@ -91,16 +91,16 @@
 
   <link name="ee">
     <inertial>
-      <origin xyz="0.0 0 0"/>
-      <mass value="0.1"/>
+      <origin xyz="0.5 0 0"/>
+      <mass value="0.5"/>
       <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
     </inertial>
 
     <visual>
       <geometry>
-        <box size="0.06 0.06 0.06"/>	
+        <box size="0.5 0.025 0.025"/>	
       </geometry>
-      <origin rpy="0 0 0" xyz="0.0 0 0"/>
+      <origin rpy="0 0 0" xyz="0.25 0 0"/>
       <material name="green">
         <color rgba="0 0.8 0 1"/>
       </material>
@@ -117,7 +117,7 @@
 
   <joint name="link2_to_ee" type="fixed">
     <axis xyz="0 0 1"/>
-    <origin xyz="1.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+    <origin xyz="1.0 0.0 0.0" rpy="0.0 0.0 0.4"/>
     <parent link="link2"/>
     <child link="ee"/>
   </joint>
