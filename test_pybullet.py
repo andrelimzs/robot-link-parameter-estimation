@@ -71,6 +71,27 @@ def render(p, physics_client_id):
 
     return rgb_array
 
+def joint_to_task_state(state):
+    """Given joint angles, return end effector position
+    
+    """
+    # Physical parameters
+    l1 = 1
+    l2 = 1
+
+    # Unpack state
+    q1, q1_d, q2, q2_d = state
+
+    pos = np.zeros(2)
+    pos[0] = l1 * cos(q1) + l2 * cos(q1+q2)
+    pos[1] = l1 * sin(q1) + l2 * sin(q1+q2)
+    
+    vel = np.zeros(2)
+    vel[0] = -q1_d * l1 * sin(q1) - (q1_d+q2_d) * l2 * sin(q1+q2)
+    vel[1] =  q1_d * l1 * cos(q1) + (q1_d+q2_d) * l2 * cos(q1+q2)
+
+    return pos, vel
+
 # Connect to simulation engine
 p = bc.BulletClient(connection_mode=p2.GUI)
 physics_client_id = p._client
